@@ -1,6 +1,7 @@
 package com.BMS.Bank_Management_System.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,6 +38,25 @@ public class Transaction {
     private String status; //status of the transaction: Success/Failer
 
     @Column (nullable = false)
+
+    @ManyToOne
+    @JoinColumn (name = "from_account_id")
+    @JsonBackReference ("sentTransactions")
+    private Account fromAccount;
+
+    @ManyToOne
+    @JoinColumn (name = "to_account_id")
+    @JsonBackReference ("receivedTransactions")
+    private Account toAccount;
+
+    @ManyToOne
+    @JoinColumn ("performed_by_user_id")
+    private User performedBy;
+
+    @ManyToOne
+    @JoinColumn (name = "account_id", nullable = false)
+    @JsonBackReference ("accountTransictions")
+    private Account account;
 
 
 
