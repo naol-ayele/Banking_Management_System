@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChangePasswordRequest {
-    private String currentPassword;
-    private String newPassword;
+public class AuthResponse {
+    private String token;
+    private String username;
+    private String role;
+    private Long userId;
 }
