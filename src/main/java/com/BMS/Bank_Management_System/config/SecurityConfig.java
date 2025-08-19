@@ -40,7 +40,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        //.requestMatchers("/", "/login","/register","/profile", "/css/**").permitAll()
+                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
+                        .requestMatchers("/ws/**", "/topic/**", "/app/**").permitAll()
+                        .requestMatchers("/**/*.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.ico").permitAll()
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/favicon.ico").permitAll()
                         .anyRequest().authenticated())
                 .headers(AbstractHttpConfigurer::disable)
                 .with(new CorsConfigurer<>(), Customizer.withDefaults())
@@ -48,4 +52,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }
