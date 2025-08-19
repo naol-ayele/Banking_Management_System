@@ -1,13 +1,12 @@
-package com.BMS.Banking_Management_System.service;
-
-import com.BMS.Banking_Management_System.dto.TransactionDTO;
-import com.BMS.Banking_Management_System.dto.TransactionSummary;
-import com.BMS.Banking_Management_System.entity.Account;
-import com.BMS.Banking_Management_System.entity.Transaction;
-import com.BMS.Banking_Management_System.exception.ResourceNotFoundException;
-import com.BMS.Banking_Management_System.repository.AccountRepository;
-import com.BMS.Banking_Management_System.repository.TransactionRepository;
-import com.BMS.Banking_Management_System.util.PdfGenerator;
+package com.BMS.Bank_Management_System.service;
+import com.BMS.Bank_Management_System.dto.TransactionDTO;
+import com.BMS.Bank_Management_System.dto.TransactionSummary;
+import com.BMS.Bank_Management_System.entity.Account;
+import com.BMS.Bank_Management_System.entity.Transaction;
+import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
+import com.BMS.Bank_Management_System.repository.AccountRepository;
+import com.BMS.Bank_Management_System.TransactionRepository;
+import com.BMS.Bank_Management_System.util.PdfGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,7 +25,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final PdfGenerator pdfGenerator;
-    private final com.BMS.Banking_Management_System.mapper.TransactionMapper transactionMapper;
+    private final com.BMS.Bank_Management_System.mapper.TransactionMapper transactionMapper;
 
     private boolean isAdminOrStaff(Authentication auth) {
         return auth.getAuthorities().stream()

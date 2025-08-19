@@ -1,7 +1,7 @@
 
-package com.BMS.Banking_Management_System.repository;
+package com.BMS.Bank_Management_System.repository;
 
-import com.BMS.Banking_Management_System.entity.ScheduledTransfer;
+import com.BMS.Bank_Management_System.entity.ScheduledTransfer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
