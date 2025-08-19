@@ -1,8 +1,8 @@
 
-package com.BMS.Banking_Management_System.controller;
+package com.BMS.Bank_Management_System.controller;
 
-import com.BMS.Banking_Management_System.dto.TransactionDTO;
-import com.BMS.Banking_Management_System.service.TransactionService;
+import com.BMS.Bank_Management_System.dto.TransactionDTO;
+import com.BMS.Bank_Management_System.service.TransactionService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;

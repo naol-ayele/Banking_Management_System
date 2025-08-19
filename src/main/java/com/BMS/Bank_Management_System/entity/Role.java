@@ -1,4 +1,4 @@
-package com.BMS.Banking_Management_System.entity;
+package com.BMS.Bank_Management_System.entity;
 
 public enum Role {
     ADMIN,
