@@ -2,7 +2,7 @@ package com.BMS.Bank_Management_System.service;
 
 import com.BMS.Bank_Management_System.entity.Account;
 import com.BMS.Bank_Management_System.entity.ScheduledTransfer;
-import com.BMS.Bank_Management_System.System.exception.ResourceNotFoundException;
+import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
 import com.BMS.Bank_Management_System.repository.AccountRepository;
 import com.BMS.Bank_Management_System.repository.ScheduledTransferRepository;
 import lombok.RequiredArgsConstructor;

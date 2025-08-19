@@ -53,7 +53,7 @@ public class TransactionController {
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
     @GetMapping("/{accountId}/summary")
 
-    public ResponseEntity<com.BMS.Banking_Management_System.dto.TransactionSummary> getMonthlySummary(
+    public ResponseEntity<com.BMS.Bank_Management_System.dto.TransactionSummary> getMonthlySummary(
 
             @PathVariable Long accountId,
             @RequestParam int year,

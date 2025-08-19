@@ -55,7 +55,7 @@ public class AdminService {
     }
 
     public void saveAudit(String username, String action, String details) {
-        com.naol.Banking.Management.System.entity.AuditLog log = com.BMS.Bank_Management_System.entity.AuditLog.builder()
+        com.BMS.Bank_Management_System.entity.AuditLog log = com.BMS.Bank_Management_System.entity.AuditLog.builder()
                 .username(username)
                 .action(action)
                 .details(details)

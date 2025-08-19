@@ -5,7 +5,7 @@ import com.BMS.Bank_Management_System.entity.Account;
 import com.BMS.Bank_Management_System.entity.Transaction;
 import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
 import com.BMS.Bank_Management_System.repository.AccountRepository;
-import com.BMS.Bank_Management_System.TransactionRepository;
+import com.BMS.Bank_Management_System.repository.TransactionRepository;
 import com.BMS.Bank_Management_System.util.PdfGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
