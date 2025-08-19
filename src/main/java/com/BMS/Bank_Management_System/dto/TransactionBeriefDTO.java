@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionBriefDTO {
+public class TransactionBeriefDTO {
     private Long id;
     private String type;
     private BigDecimal amount;
