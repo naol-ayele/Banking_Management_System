@@ -50,5 +50,5 @@ public class Account {
 
     @OneToMany(mappedBy = "account")
     @JsonManagedReference("accountTransactions")
-    private List<Transaction> transactions; {
+    private List<Transaction> transactions;
 }
