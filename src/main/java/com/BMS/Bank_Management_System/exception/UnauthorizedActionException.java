@@ -6,3 +6,4 @@ public class UnauthorizedActionException extends RuntimeException {
         super(message);
     }
 }
+
