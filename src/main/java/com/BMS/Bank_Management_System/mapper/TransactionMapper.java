@@ -1,4 +1,4 @@
-package com.BMS.Bank_Management_System.mapper;
+package com.BMS.Banking_Management_System.mapper;
 
 
 import org.mapstruct.Mapper;

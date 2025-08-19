@@ -1,6 +1,8 @@
-package com.bms.Banking.Management.System.repository;
 
-import com.bms.Banking.Management.System.entity.ScheduledTransfer;
+package com.BMS.Banking_Management_System.repository;
+
+import com.BMS.Banking_Management_System.entity.ScheduledTransfer;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
