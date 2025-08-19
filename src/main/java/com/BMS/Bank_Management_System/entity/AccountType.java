@@ -1,4 +1,7 @@
 package com.BMS.Bank_Management_System.entity;
 
-public class AccountType {
+public enum AccountType {
+    SAVINGS,
+    CURRENT
 }
+
