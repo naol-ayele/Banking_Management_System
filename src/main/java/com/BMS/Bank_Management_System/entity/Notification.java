@@ -1,10 +1,7 @@
 package com.BMS.Bank_Management_System.entity;
 
 
-import jakarta.persistence.*;
-        import lombok.*;
 
-        import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")

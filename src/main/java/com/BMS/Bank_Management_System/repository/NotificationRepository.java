@@ -1,6 +1,10 @@
 package com.BMS.Bank_Management_System.repository;
 
 
+public interface NotificationRepository {
+}
+=======
+
 
 import com.BMS.Bank_Management_System.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;

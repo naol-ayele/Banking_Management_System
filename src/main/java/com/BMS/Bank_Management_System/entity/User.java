@@ -1,7 +1,5 @@
 package com.BMS.Bank_Management_System.entity;
 
-
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +47,4 @@ public class User {
     private Integer failedLoginAttempts;
     private Instant lockedUntil;
 }
-
-
 
