@@ -1,5 +1,6 @@
 package com.BMS.Bank_Management_System.repository;
 
+
 import com.BMS.Bank_Management_System.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.BMS.Bank_Management_System.entity.Role;
@@ -20,6 +21,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 }
 
-}
 
 
