@@ -19,4 +19,5 @@ public class UserDTO {
     private String nationalIdImageUrl;
     private String role;
     private String password; // Optional, only for registration
+
 }

@@ -1,8 +1,5 @@
 package com.BMS.Bank_Management_System.config;
 
-
-import com.BMS.Bank_Management_System.security.CustomUserDetailsService;
-import com.BMS.Bank_Management_System.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,4 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+}
+
 

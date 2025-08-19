@@ -1,4 +1,5 @@
 package com.BMS.Bank_Management_System.controller;
+
 import com.BMS.Bank_Management_System.dto.AuthRequest;
 import com.BMS.Bank_Management_System.dto.AuthResponse;
 import com.BMS.Bank_Management_System.dto.UserDTO;
@@ -43,4 +44,5 @@ public class AuthController {
         authService.changePassword(authentication.getName(), req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok("Password updated");
     }
+
 }

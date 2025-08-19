@@ -2,10 +2,6 @@ package com.BMS.Bank_Management_System.entity;
 
 
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
@@ -28,7 +24,7 @@ public class Notification {
     private String type; // e.g., ACCOUNT_APPROVED, ACCOUNT_FROZEN, TXN_SUCCESS
 
     @Column(nullable = false, length = 1000)
-    private String message;git
+    private String message;
 
     @Column(nullable = false)
     private String channel; // IN_APP (MVP)
@@ -40,6 +36,4 @@ public class Notification {
     private LocalDateTime sentAt;
     private LocalDateTime readAt;
 }
-
-
 
