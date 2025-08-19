@@ -1,6 +1,6 @@
-package com.BMS.Banking_Management_System.util;
+package com.BMS.Bank_Management_System.util;
 
-import com.BMS.Banking_Management_System.dto.TransactionDTO;
+import com.BMS.Bank_Management_System.dto.TransactionDTO;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
