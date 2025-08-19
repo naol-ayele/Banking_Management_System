@@ -1,3 +1,4 @@
+
 package com.BMS.Bank_Management_System.dto;
 
 import lombok.AllArgsConstructor;
@@ -7,12 +8,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionBriefDTO {
+public class TransactionSimpleDTO {
     private Long id;
     private String type;
     private BigDecimal amount;
@@ -20,7 +19,7 @@ public class TransactionBriefDTO {
     private String description;
     private String referenceId;
     private String status;
-    private String performedBy; // username
+    private String performedBy;
 }
 
 

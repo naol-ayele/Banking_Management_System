@@ -58,5 +58,5 @@ public class AccountController {
         scheduledTransferService.createScheduledTransfer(fromAccountId, toAccountId, amount, firstRunAt);
         return ResponseEntity.ok("Transfer scheduled");
     }
-}{
 }
+
