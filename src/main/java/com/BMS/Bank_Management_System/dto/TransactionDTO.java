@@ -1,4 +1,4 @@
-package com.bms.Banking.Management.System.dto;
+package com.BMS.Banking_Management_System.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
