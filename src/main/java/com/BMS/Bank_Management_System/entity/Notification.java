@@ -28,7 +28,7 @@ public class Notification {
     private String type; // e.g., ACCOUNT_APPROVED, ACCOUNT_FROZEN, TXN_SUCCESS
 
     @Column(nullable = false, length = 1000)
-    private String message;git
+    private String message;
 
     @Column(nullable = false)
     private String channel; // IN_APP (MVP)
