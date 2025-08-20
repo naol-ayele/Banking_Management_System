@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                         .requestMatchers("/ws/**", "/topic/**", "/app/**").permitAll()
-                        .requestMatchers("/**/*.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.ico").permitAll()
+                        .requestMatchers("*.html", "*.css", "*.js", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.ico").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
                         .anyRequest().authenticated())
