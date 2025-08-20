@@ -54,5 +54,8 @@ public class Transaction {
     @JoinColumn(name = "account_id", nullable = false)
     @JsonBackReference("accountTransactions")
     private Account account;
+
+    private String token;
+    private LocalDateTime expiryTime;
 }
 
