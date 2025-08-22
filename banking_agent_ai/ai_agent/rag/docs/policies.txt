@@ -1,0 +1,4 @@
+KYC: Customers must provide government-issued ID and proof of address.
+AML: Transactions above threshold must be reviewed. Unusual patterns can be flagged.
+GDPR: Personal data must be processed lawfully and with transparency.
+Loan Policy: Minimum credit score 650, Debt-to-Income should be below 40%.
