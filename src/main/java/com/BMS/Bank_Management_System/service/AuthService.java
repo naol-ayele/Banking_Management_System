@@ -6,10 +6,12 @@ import com.BMS.Bank_Management_System.dto.UserDTO;
 import com.BMS.Bank_Management_System.entity.Role;
 import com.BMS.Bank_Management_System.entity.User;
 import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
-import com.BMS.Bank_Management_System.repository.UserRepository;
 import com.BMS.Bank_Management_System.exception.UnauthorizedActionException;
+import com.BMS.Bank_Management_System.repository.UserRepository;
 import com.BMS.Bank_Management_System.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +27,6 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already taken");
         }
-
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already taken");
         }
@@ -57,14 +58,13 @@ public class AuthService {
         user.setFailedLoginAttempts(0);
         user.setLockedUntil(null);
         userRepository.save(user);
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user);
 
         return new AuthResponse(token, user.getUsername(), user.getRole().name(), user.getId());
     }
 
     public User registerUserWithRoleControl(UserDTO request, Role creatorRole) {
-        // Only ADMIN can create STAFF or ADMIN; STAFF can create CUSTOMER only; CUSTOMER cannot create users
-        Role requestedRole = Role.valueOf(request.getRole());
+        Role requestedRole = Role.valueOf(request.getRole().toUpperCase());
         boolean allowed = switch (creatorRole) {
             case ADMIN -> true; // admin can create any role
             case STAFF -> requestedRole == Role.CUSTOMER; // staff only customer
@@ -91,6 +91,54 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    private User authenticate(AuthRequest request) {
+
+        User user = userRepository.findByEmailOrPhone(request.getUsername(), request.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + request.getUsername()));
+
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(java.time.Instant.now())) {
+            throw new LockedException("Account is locked. Please try again later.");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            handleFailedLoginAttempt(user);
+            throw new BadCredentialsException("Invalid credentials provided.");
+        }
+
+        resetFailedLoginAttempts(user);
+        return user;
+    }
+
+    public AuthResponse login(AuthRequest request) {
+        User user = authenticate(request);
+        String token = jwtUtil.generateToken(user);
+        return new AuthResponse(token, user.getUsername(), user.getRole().name(), user.getId());
+    }
+
+    public AuthResponse loginForAgent(AuthRequest request) {
+        User user = authenticate(request);
+        String agentToken = jwtUtil.generateAgentToken(user);
+        return new AuthResponse(agentToken, user.getUsername(), user.getRole().name(), user.getId());
+    }
+
+    private void handleFailedLoginAttempt(User user) {
+        int attempts = (user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts()) + 1;
+        user.setFailedLoginAttempts(attempts);
+        if (attempts >= 5) {
+            user.setLockedUntil(java.time.Instant.now().plusSeconds(600)); // Lock for 10 minutes
+            user.setFailedLoginAttempts(0);
+        }
+        userRepository.save(user);
+    }
+
+    private void resetFailedLoginAttempts(User user) {
+        if (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
+            user.setFailedLoginAttempts(0);
+            user.setLockedUntil(null);
+            userRepository.save(user);
+        }
+    }
+
     public Role getUserRole(String username) {
         return userRepository.findByUsername(username)
                 .map(User::getRole)
@@ -101,7 +149,7 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new BadCredentialsException("Current password is incorrect");
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -115,37 +163,4 @@ public class AuthService {
         dto.setRole(user.getRole() != null ? user.getRole().name() : null);
         return dto;
     }
-
-    public AuthResponse login(AuthRequest request) {
-        User user = userRepository.findByUsernameOrEmailOrPhone(request.getUsername(), request.getUsername(), request.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        // Check lock status
-        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(java.time.Instant.now())) {
-            throw new RuntimeException("Account locked. Try again later.");
-        }
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            int attempts = user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts();
-            attempts++;
-            user.setFailedLoginAttempts(attempts);
-            // Lock after 5 failed attempts for 10 minutes
-            if (attempts >= 5) {
-                user.setLockedUntil(java.time.Instant.now().plusSeconds(10 * 60));
-                user.setFailedLoginAttempts(0);
-            }
-            userRepository.save(user);
-            throw new RuntimeException("Invalid password");
-        }
-
-        // Successful login resets counters
-        user.setFailedLoginAttempts(0);
-        user.setLockedUntil(null);
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getRole().name(), user.getId());
-    }
-
-
 }

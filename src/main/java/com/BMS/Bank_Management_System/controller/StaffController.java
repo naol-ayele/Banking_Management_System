@@ -1,12 +1,9 @@
 package com.BMS.Bank_Management_System.controller;
 
-import com.BMS.Bank_Management_System.dto.AccountDTO;
-import com.BMS.Bank_Management_System.dto.CreateCustomerAndAccountRequest;
-import com.BMS.Bank_Management_System.dto.CustomerSearchDTO;
-import com.BMS.Bank_Management_System.dto.CreateAccountForCustomerRequest;
-import com.BMS.Bank_Management_System.dto.UpdateCustomerRequest;
-import com.BMS.Bank_Management_System.dto.NameChangeRequest;
-import com.BMS.Bank_Management_System.dto.ComplianceDocumentRequest;
+import com.BMS.Bank_Management_System.dto.*;
+import com.BMS.Bank_Management_System.entity.User;
+import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
+import com.BMS.Bank_Management_System.repository.UserRepository;
 import com.BMS.Bank_Management_System.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +19,7 @@ import java.util.List;
 public class StaffController {
 
     private final AccountService accountService;
+    private final UserRepository userRepository;
 
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @PostMapping(value = "/create-account", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -75,6 +73,24 @@ public class StaffController {
             @RequestParam(defaultValue = "10") int limit
     ) {
         return ResponseEntity.ok(accountService.searchCustomers(q, limit));
+    }
+
+
+    //this method is added to enable the python backend to fund a user by username
+
+    @GetMapping("/users/users/details/{username}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDTO> getUserDetailsByUsername(@PathVariable String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        UserDTO userDto = new UserDTO();
+        userDto.setId(user.getId());
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        userDto.setRole(user.getRole() != null ? user.getRole().name() : null);
+
+        return ResponseEntity.ok(userDto);
     }
 
     @GetMapping("/customers")

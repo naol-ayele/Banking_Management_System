@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
+
+    Optional<User> findByEmailOrPhone(String email, String phone);
     Optional<User> findByUsernameOrEmailOrPhone(String username, String email, String phone);
     List<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneContainingIgnoreCase(
             String username, String email, String phone, org.springframework.data.domain.Pageable pageable);
