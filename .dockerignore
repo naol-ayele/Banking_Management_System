@@ -1,0 +1,7 @@
+
+.git
+.idea
+.mvn
+uploads/
+.gitignore
+.gitattributes
