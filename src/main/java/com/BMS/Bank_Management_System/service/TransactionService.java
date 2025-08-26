@@ -1,4 +1,5 @@
 package com.BMS.Bank_Management_System.service;
+
 import com.BMS.Bank_Management_System.dto.TransactionDTO;
 import com.BMS.Bank_Management_System.dto.TransactionSummary;
 import com.BMS.Bank_Management_System.entity.Account;
@@ -30,7 +31,7 @@ public class TransactionService {
     private boolean isAdminOrStaff(Authentication auth) {
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ROLE_STAFF"));
+                .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ROLE_STAFF") || role.equals("ROLE_LOAN_OFFICER"));
     }
 
     private void verifyAccess(Long accountId) {
@@ -129,4 +130,3 @@ public class TransactionService {
     }
 
 }
-

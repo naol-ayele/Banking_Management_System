@@ -1,6 +1,5 @@
 package com.BMS.Bank_Management_System.util;
 
-
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -53,6 +52,4 @@ public class JwtUtil {
                 .getPayload()
                 .getSubject();
     }
-
-
 }

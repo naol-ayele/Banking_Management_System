@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.BMS.Bank_Management_System.mapper.AccountMapper;
 import com.BMS.Bank_Management_System.dto.CustomerSearchDTO;
@@ -52,32 +53,6 @@ public class AccountService {
                 .status(accountDTO.getStatus() != null ? AccountStatus.valueOf(accountDTO.getStatus()) : AccountStatus.PENDING_APPROVAL)
                 .user(user)
                 .build();
-
-        accountRepository.save(account);
-    }
-
-    public void updateAccount(Long accountId, AccountDTO accountDTO) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + accountId));
-
-        if (accountDTO.getAccountNumber() != null) {
-            account.setAccountNumber(accountDTO.getAccountNumber());
-        }
-        if (accountDTO.getBalance() != null) {
-            account.setBalance(accountDTO.getBalance());
-        }
-        if (accountDTO.getUserId() != null) {
-            User user = userRepository.findById(accountDTO.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + accountDTO.getUserId()));
-            account.setUser(user);
-        }
-
-        if (accountDTO.getAccountType() != null) {
-            account.setAccountType(AccountType.valueOf(accountDTO.getAccountType()));
-        }
-        if (accountDTO.getStatus() != null) {
-            account.setStatus(AccountStatus.valueOf(accountDTO.getStatus()));
-        }
 
         accountRepository.save(account);
     }
@@ -286,10 +261,12 @@ public class AccountService {
 
     public void createCustomerAndAccount(CreateCustomerAndAccountRequest req) {
         // upsert by username/email
-        User user = userRepository.findByUsername(req.getUsername()).orElse(null);
-        if (user == null && req.getEmail() != null) {
-            user = userRepository.findByUsernameOrEmailOrPhone(req.getEmail(), req.getEmail(), req.getEmail()).orElse(null);
-        }
+        User user = userRepository.findByUsername(req.getUsername())
+                .or(() -> req.getEmail() != null ? userRepository.findByEmail(req.getEmail()) : Optional.empty())
+                .or(() -> req.getPhone() != null ? userRepository.findByPhone(req.getPhone()) : Optional.empty())
+                .orElse(null);
+
+
         if (user == null) {
             user = new User();
             user.setUsername(req.getUsername());
@@ -317,10 +294,11 @@ public class AccountService {
 
     public void createCustomerAndAccountWithId(CreateCustomerAndAccountRequest req, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
         // Create or find user
-        User user = userRepository.findByUsername(req.getUsername()).orElse(null);
-        if (user == null && req.getEmail() != null) {
-            user = userRepository.findByUsernameOrEmailOrPhone(req.getEmail(), req.getEmail(), req.getEmail()).orElse(null);
-        }
+        User user = userRepository.findByUsername(req.getUsername())
+                .or(() -> req.getEmail() != null ? userRepository.findByEmail(req.getEmail()) : Optional.empty())
+                .or(() -> req.getPhone() != null ? userRepository.findByPhone(req.getPhone()) : Optional.empty())
+                .orElse(null);
+
         if (user == null) {
             user = new User();
             user.setUsername(req.getUsername());
@@ -628,82 +606,6 @@ public class AccountService {
         }
     }
 
-    public void updateCustomerInformationWithCompliance(Long customerId, UpdateCustomerRequest request,
-                                                        ComplianceDocumentRequest compliance, String staffUsername) {
-        // Verify customer exists and is a CUSTOMER
-        User customer = userRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + customerId));
-
-        if (customer.getRole() != Role.CUSTOMER) {
-            throw new IllegalArgumentException("User with id " + customerId + " is not a customer");
-        }
-
-        boolean changesMade = false;
-        String changeDetails = "";
-        String complianceDetails = "";
-
-        // Update basic customer information
-        if (request.getEmail() != null && !request.getEmail().isBlank() && !request.getEmail().equals(customer.getEmail())) {
-            if (userRepository.existsByEmail(request.getEmail()) && !request.getEmail().equals(customer.getEmail())) {
-                throw new IllegalArgumentException("Email " + request.getEmail() + " is already in use");
-            }
-            customer.setEmail(request.getEmail());
-            changesMade = true;
-            changeDetails += "Email updated to: " + request.getEmail() + "; ";
-        }
-
-        if (request.getPhone() != null && !request.getPhone().isBlank() && !request.getPhone().equals(customer.getPhone())) {
-            if (userRepository.existsByPhone(request.getPhone()) && !request.getPhone().equals(customer.getPhone())) {
-                throw new IllegalArgumentException("Phone " + request.getPhone() + " is already in use");
-            }
-            customer.setPhone(request.getPhone());
-            changesMade = true;
-            changeDetails += "Phone updated to: " + request.getPhone() + "; ";
-        }
-
-        if (request.getMotherName() != null && !request.getMotherName().isBlank() && !request.getMotherName().equals(customer.getMotherName())) {
-            customer.setMotherName(request.getMotherName());
-            changesMade = true;
-            changeDetails += "Mother's name updated to: " + request.getMotherName() + "; ";
-        }
-
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            customer.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(request.getPassword()));
-            changesMade = true;
-            changeDetails += "Password reset; ";
-        }
-
-        // Handle compliance documentation if provided
-        if (compliance != null) {
-            validateComplianceDocument(compliance);
-            complianceDetails = String.format(
-                    "Compliance: Document %s (ID: %s, Authority: %s, Issue Date: %s, Verified by: %s on %s). ",
-                    compliance.getDocumentType(), compliance.getDocumentNumber(),
-                    compliance.getIssuingAuthority(), compliance.getIssueDate(),
-                    compliance.getVerifiedBy(), compliance.getVerificationDate()
-            );
-            changesMade = true;
-        }
-
-        if (!changesMade) {
-            throw new IllegalArgumentException("No changes were made to customer information");
-        }
-
-        // Save the updated customer
-        userRepository.save(customer);
-
-        // Log the changes in audit log with compliance details
-        if (staffUsername != null) {
-            String fullDetails = "Updated customer " + customer.getUsername() + " (ID: " + customerId + "). " +
-                    changeDetails + complianceDetails;
-            adminService.saveAudit(staffUsername, "UPDATE_CUSTOMER_INFO_COMPLIANCE", fullDetails);
-        }
-
-        // Send notification to customer about updates
-        notificationService.notifyUser(customerId, "CUSTOMER_INFO_UPDATED",
-                "Your account information has been updated by our staff. " +
-                        (compliance != null ? "This update was processed with compliance verification." : ""));
-    }
 
     private void validateComplianceDocument(ComplianceDocumentRequest compliance) {
         if (compliance.getDocumentType() == null || compliance.getDocumentType().isBlank()) {

@@ -53,13 +53,6 @@ public class StaffController {
     }
 
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    @PutMapping("/update-account/{accountId}")
-    public ResponseEntity<String> updateAccount(@PathVariable Long accountId, @RequestBody AccountDTO accountDTO) {
-        accountService.updateAccount(accountId, accountDTO);
-        return ResponseEntity.ok("Account updated successfully");
-    }
-
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @PutMapping("/accounts/{accountId}/approve")
     public ResponseEntity<String> approveAccount(@PathVariable Long accountId) {
         accountService.approveAccount(accountId);
@@ -113,18 +106,6 @@ public class StaffController {
         return ResponseEntity.ok("Customer information updated successfully");
     }
 
-    @PutMapping("/customers/{customerId}/compliance-update")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
-    public ResponseEntity<String> updateCustomerWithCompliance(
-            @PathVariable Long customerId,
-            @RequestBody UpdateCustomerRequest request,
-            @RequestPart(value = "compliance", required = false) ComplianceDocumentRequest compliance,
-            org.springframework.security.core.Authentication authentication
-    ) {
-        String staffUsername = authentication.getName();
-        accountService.updateCustomerInformationWithCompliance(customerId, request, compliance, staffUsername);
-        return ResponseEntity.ok("Customer information updated with compliance tracking");
-    }
 
     @PostMapping("/customers/{customerId}/name-change")
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")

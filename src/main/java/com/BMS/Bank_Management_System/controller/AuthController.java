@@ -38,11 +38,10 @@ public class AuthController {
     }
 
     // Self change password (requires supplying current password)
-    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN', 'LOAN_OFFICER')")
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(Authentication authentication, @RequestBody ChangePasswordRequest req) {
         authService.changePassword(authentication.getName(), req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok("Password updated");
     }
-
 }
