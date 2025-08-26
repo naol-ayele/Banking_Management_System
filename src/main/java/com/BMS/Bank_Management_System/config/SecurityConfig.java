@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("*.html", "*.css", "*.js", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.ico").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
+                        .requestMatchers("/analytics/**").permitAll()
                         .anyRequest().authenticated())
                 .headers(AbstractHttpConfigurer::disable)
                 .with(new CorsConfigurer<>(), Customizer.withDefaults())
