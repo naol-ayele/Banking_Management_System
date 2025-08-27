@@ -59,23 +59,19 @@ public class ChatController {
             Authentication authentication) {
         User sender = (User) authentication.getPrincipal();
 
-        // Validate file
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File cannot be empty");
         }
 
-        // Validate file size (50MB limit)
         if (file.getSize() > 50 * 1024 * 1024) {
             throw new IllegalArgumentException("File size cannot exceed 50MB");
         }
 
-        // Validate file type
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.trim().isEmpty()) {
             throw new IllegalArgumentException("File name cannot be empty");
         }
 
-        // Create SendMessageRequest with file details
         SendMessageRequest request = SendMessageRequest.builder()
                 .chatRoomId(chatRoomId)
                 .content(content)

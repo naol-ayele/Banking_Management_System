@@ -51,4 +51,8 @@ public class Account {
     @OneToMany(mappedBy = "account")
     @JsonManagedReference("accountTransactions")
     private List<Transaction> transactions;
+
+    public String getUsername() {
+        return null;
+    }
 }

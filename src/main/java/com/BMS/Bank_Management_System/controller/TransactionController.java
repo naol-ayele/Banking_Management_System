@@ -1,9 +1,7 @@
-
 package com.BMS.Bank_Management_System.controller;
 
 import com.BMS.Bank_Management_System.dto.TransactionDTO;
 import com.BMS.Bank_Management_System.service.TransactionService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
@@ -20,7 +18,7 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN', 'LOAN_OFFICER')")
     @GetMapping("/{accountId}/history")
     public ResponseEntity<List<TransactionDTO>> getTransactionHistory(@PathVariable Long accountId) {
         return ResponseEntity.ok(transactionService.getTransactionHistory(accountId));
@@ -52,9 +50,7 @@ public class TransactionController {
 
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
     @GetMapping("/{accountId}/summary")
-
     public ResponseEntity<com.BMS.Bank_Management_System.dto.TransactionSummary> getMonthlySummary(
-
             @PathVariable Long accountId,
             @RequestParam int year,
             @RequestParam int month) {
@@ -67,9 +63,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getMyPerformedTransactions());
     }
 
-    // Admin transactions endpoint moved to AdminController at /api/admin/transactions
 
-    // New endpoint for single transaction receipt PDF
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
     @GetMapping("/receipt/{transactionId}")
     public ResponseEntity<InputStreamResource> getTransactionReceipt(@PathVariable Long transactionId) {

@@ -1,11 +1,13 @@
 package com.BMS.Bank_Management_System.service;
 
+import com.BMS.Bank_Management_System.dto.TransactionDTO;
 import com.BMS.Bank_Management_System.dto.UserDTO;
 import com.BMS.Bank_Management_System.dto.AccountWithTransactionsDTO;
 import com.BMS.Bank_Management_System.dto.TransactionSimpleDTO;
 import com.BMS.Bank_Management_System.entity.Role;
 import com.BMS.Bank_Management_System.entity.User;
 import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
+import com.BMS.Bank_Management_System.repository.TransactionRepository;
 import com.BMS.Bank_Management_System.repository.UserRepository;
 import com.BMS.Bank_Management_System.repository.AuditLogRepository;
 import com.BMS.Bank_Management_System.repository.AccountRepository;

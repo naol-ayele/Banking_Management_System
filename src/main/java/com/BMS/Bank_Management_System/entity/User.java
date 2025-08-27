@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String username;
 
     @Column(nullable = false)
@@ -44,10 +44,16 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Account> accounts;
+    @Builder.Default
+    private List<Account> accounts = new java.util.ArrayList<>();
 
     // Security controls
-    private Integer failedLoginAttempts;
-    private Instant lockedUntil;
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    @Builder.Default
+    private Instant lockedUntil = null;
 }
+
+
 

@@ -15,6 +15,8 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -24,9 +26,6 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     public AuthResponse register(UserDTO request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already taken");
-        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already taken");
         }
@@ -34,8 +33,7 @@ public class AuthService {
             throw new RuntimeException("Phone already taken");
         }
 
-        // Public self-registration is restricted to CUSTOMER role only,
-        // except bootstrapping the very first ADMIN user if none exists.
+        // Only CUSTOMER allowed, except bootstrapping first ADMIN
         if (request.getRole() != null && !"CUSTOMER".equalsIgnoreCase(request.getRole())) {
             boolean isFirstAdminBootstrap = "ADMIN".equalsIgnoreCase(request.getRole())
                     && userRepository.countByRole(Role.ADMIN) == 0;
@@ -51,67 +49,83 @@ public class AuthService {
         user.setMotherName(request.getMotherName());
         user.setNationalIdImageUrl(request.getNationalIdImageUrl());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole((request.getRole() != null && "ADMIN".equalsIgnoreCase(request.getRole()) && userRepository.countByRole(Role.ADMIN) == 0)
+        user.setRole((request.getRole() != null && "ADMIN".equalsIgnoreCase(request.getRole())
+                && userRepository.countByRole(Role.ADMIN) == 0)
                 ? Role.ADMIN
                 : Role.CUSTOMER);
 
         user.setFailedLoginAttempts(0);
         user.setLockedUntil(null);
         userRepository.save(user);
-        String token = jwtUtil.generateToken(user);
 
+        String token = jwtUtil.generateToken(user.getEmail()); // ✅ email is the unique principal
         return new AuthResponse(token, user.getUsername(), user.getRole().name(), user.getId());
     }
 
     public User registerUserWithRoleControl(UserDTO request, Role creatorRole) {
-        Role requestedRole = Role.valueOf(request.getRole().toUpperCase());
+        Role requestedRole = Role.valueOf(request.getRole());
+
         boolean allowed = switch (creatorRole) {
-            case ADMIN -> true; // admin can create any role
-            case STAFF -> requestedRole == Role.CUSTOMER; // staff only customer
-            case CUSTOMER -> false; // not allowed
+            case ADMIN -> true;
+            case STAFF, LOAN_OFFICER -> requestedRole == Role.CUSTOMER;
+            case CUSTOMER -> false;
         };
+
         if (!allowed) {
             throw new UnauthorizedActionException("Not allowed to create user with role " + requestedRole);
         }
 
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already taken");
-        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already taken");
+        }
+        if (request.getPhone() != null && userRepository.existsByPhone(request.getPhone())) {
+            throw new RuntimeException("Phone already taken");
         }
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(requestedRole);
         user.setFailedLoginAttempts(0);
         user.setLockedUntil(null);
+
         return userRepository.save(user);
     }
 
-    private User authenticate(AuthRequest request) {
+    public AuthResponse login(AuthRequest request) {
+        String identifier = request.getIdentifier();
 
-        User user = userRepository.findByEmailOrPhone(request.getUsername(), request.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + request.getUsername()));
+        // ✅ allow login by email or phone
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(java.time.Instant.now())) {
-            throw new LockedException("Account is locked. Please try again later.");
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(Instant.now())) {
+            throw new RuntimeException("Account locked. Try again later.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            handleFailedLoginAttempt(user);
-            throw new BadCredentialsException("Invalid credentials provided.");
+            int attempts = user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts();
+            attempts++;
+            user.setFailedLoginAttempts(attempts);
+
+            if (attempts >= 5) {
+                user.setLockedUntil(Instant.now().plusSeconds(10 * 60)); // lock 10 mins
+                user.setFailedLoginAttempts(0);
+            }
+
+            userRepository.save(user);
+            throw new RuntimeException("Invalid password");
         }
 
-        resetFailedLoginAttempts(user);
-        return user;
-    }
+        // ✅ reset failed attempts
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
+        userRepository.save(user);
 
-    public AuthResponse login(AuthRequest request) {
-        User user = authenticate(request);
-        String token = jwtUtil.generateToken(user);
+        String token = jwtUtil.generateToken(user.getEmail()); // email is unique principal
         return new AuthResponse(token, user.getUsername(), user.getRole().name(), user.getId());
     }
 
@@ -131,29 +145,52 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    private void resetFailedLoginAttempts(User user) {
-        if (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
-            user.setFailedLoginAttempts(0);
-            user.setLockedUntil(null);
-            userRepository.save(user);
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
         }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
-    public Role getUserRole(String username) {
-        return userRepository.findByUsername(username)
+
+    public Role getUserRole(String principal) {
+        return userRepository.findByEmail(principal)
+                .or(() -> userRepository.findByUsername(principal))
                 .map(User::getRole)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    public void changePassword(String username, String currentPassword, String newPassword) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new BadCredentialsException("Current password is incorrect");
+    private User authenticate(AuthRequest request) {
+        User user = userRepository.findByEmail(request.getIdentifier())
+                .or(() -> userRepository.findByPhone(request.getIdentifier()))
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with identifier: " + request.getIdentifier()));
+
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(Instant.now())) {
+            throw new LockedException("Account is locked. Please try again later.");
         }
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            handleFailedLoginAttempt(user);
+            throw new BadCredentialsException("Invalid credentials provided.");
+        }
+
+        resetFailedLoginAttempts(user);
+        return user;
     }
+
+
+    private void resetFailedLoginAttempts(User user) {
+        if (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
+            user.setFailedLoginAttempts(0); user.setLockedUntil(null); userRepository.save(user);
+        }
+    }
+
 
     public UserDTO toDto(User user) {
         UserDTO dto = new UserDTO();

@@ -30,22 +30,7 @@ public class CardlessWithdrawalController {
                 request.getAccountId(), request.getAmount()));
     }
 
-    // This endpoint would be called by the ATM system (internal API)
-    @PostMapping("/withdrawal/process")
-    public ResponseEntity<String> processCardlessWithdrawal(
-            @RequestBody ProcessWithdrawalRequest request) {
 
-        cardlessWithdrawalService.processCardlessWithdrawal(request.getToken(), request.getAtmId());
-        return ResponseEntity.ok("Withdrawal processed successfully");
-    }
-
-    // For ATM to validate token before showing options
-    @GetMapping("/withdrawal/validate/{token}")
-    public ResponseEntity<Boolean> validateToken(@PathVariable String token) {
-        return ResponseEntity.ok(cardlessWithdrawalService.validateToken(token));
-    }
-
-    // For ATM to get withdrawal details
     @GetMapping("/withdrawal/details/{token}")
     public ResponseEntity<CardlessWithdrawalRequest> getWithdrawalDetails(
             @PathVariable String token) {

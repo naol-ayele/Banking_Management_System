@@ -26,13 +26,13 @@ public class AdminController {
     private final TransactionService transactionService;
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','LOAN_OFFICER')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(adminService.getAllUsers());
     }
 
     @DeleteMapping("/users/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','LOAN_OFFICER')")
     public ResponseEntity<String> deleteUser(@PathVariable Long userId, Authentication auth) {
         adminService.deleteUser(userId);
         String actorUsername = auth.getName();

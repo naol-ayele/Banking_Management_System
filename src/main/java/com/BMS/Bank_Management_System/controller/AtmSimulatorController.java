@@ -2,6 +2,7 @@ package com.BMS.Bank_Management_System.controller;
 
 import com.BMS.Bank_Management_System.dto.AtmWithdrawalRequest;
 import com.BMS.Bank_Management_System.dto.CardlessWithdrawalRequest;
+import com.BMS.Bank_Management_System.dto.ProcessWithdrawalRequest;
 import com.BMS.Bank_Management_System.service.CardlessWithdrawalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,5 +40,13 @@ public class AtmSimulatorController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/withdrawal/process")
+    public ResponseEntity<String> processCardlessWithdrawal(
+            @RequestBody ProcessWithdrawalRequest request) {
+
+        cardlessWithdrawalService.processCardlessWithdrawal(request.getToken(), request.getAtmId());
+        return ResponseEntity.ok("Withdrawal processed successfully");
     }
 }

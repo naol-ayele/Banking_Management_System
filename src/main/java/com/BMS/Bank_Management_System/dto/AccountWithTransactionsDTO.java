@@ -13,6 +13,8 @@ import java.util.List;
 public class AccountWithTransactionsDTO {
     private Long id;
     private String accountNumber;
+    private String customerUsername;
+    private String customerEmail;
     private BigDecimal balance;
     private Long userId;
     private String accountType;

@@ -23,7 +23,14 @@ public class ScheduledTransferService {
     private final AccountRepository accountRepository;
     private final AccountService accountService;
 
-    public ScheduledTransfer createScheduledTransfer(Long fromAccountId, Long toAccountId, BigDecimal amount, LocalDateTime firstRunAt) {
+    public ScheduledTransfer createScheduledTransfer(Long fromAccountId,
+                                                     Long toAccountId,
+                                                     BigDecimal amount,
+                                                     LocalDateTime firstRunAt) {
+        if (firstRunAt.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("firstRunAt must be in the future.");
+        }
+
         Account from = accountRepository.findById(fromAccountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + fromAccountId));
         Account to = accountRepository.findById(toAccountId)
@@ -36,8 +43,10 @@ public class ScheduledTransferService {
                 .nextRunAt(firstRunAt)
                 .active(true)
                 .build();
+
         return scheduledTransferRepository.save(st);
     }
+
 
     @Scheduled(fixedDelay = 60000)
     public void processDueTransfers() {

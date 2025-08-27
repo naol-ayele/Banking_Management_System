@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 public interface AccountWithTransactionsMapper {
 
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "customerUsername", expression = "java(account.getUser() != null ? account.getUser().getUsername() : \"Unknown\")")
+    @Mapping(target = "customerEmail", expression = "java(account.getUser() != null ? account.getUser().getEmail() : \"\")")
     @Mapping(target = "accountType", expression = "java(account.getAccountType() != null ? account.getAccountType().name() : null)")
     @Mapping(target = "status", expression = "java(account.getStatus() != null ? account.getStatus().name() : null)")
     @Mapping(target = "sentTransactions", ignore = true)

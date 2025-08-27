@@ -1,8 +1,11 @@
 package com.BMS.Bank_Management_System.controller;
 
 import com.BMS.Bank_Management_System.dto.*;
+import com.BMS.Bank_Management_System.entity.AccountStatus;
 import com.BMS.Bank_Management_System.entity.User;
 import com.BMS.Bank_Management_System.exception.ResourceNotFoundException;
+import com.BMS.Bank_Management_System.mapper.AccountMapper;
+import com.BMS.Bank_Management_System.repository.AccountRepository;
 import com.BMS.Bank_Management_System.repository.UserRepository;
 import com.BMS.Bank_Management_System.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/staff")
@@ -20,20 +24,15 @@ public class StaffController {
 
     private final AccountService accountService;
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final AccountMapper accountMapper;
 
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @PostMapping(value = "/create-account", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createAccount(
-            @RequestPart(value = "payload", required = false) com.BMS.Bank_Management_System.dto.CreateCustomerAndAccountRequest payload,
-            @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "payload", required = false) String payloadRaw
+            @RequestPart(value = "payload") CreateCustomerAndAccountRequest payload,
+            @RequestPart(value = "file", required = false) MultipartFile file
     ) throws Exception {
-        if (payload == null && payloadRaw != null) {
-            payload = new com.fasterxml.jackson.databind.ObjectMapper().readValue(payloadRaw, com.BMS.Bank_Management_System.dto.CreateCustomerAndAccountRequest.class);
-        }
-        if (payload == null) {
-            return ResponseEntity.badRequest().body("Missing payload");
-        }
         if (file != null && !file.isEmpty()) {
             accountService.createCustomerAndAccountWithId(payload, file);
         } else {
@@ -42,7 +41,7 @@ public class StaffController {
         return ResponseEntity.ok("Customer and account created successfully");
     }
 
-    // JSON fallback when no file is being uploaded
+
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @PostMapping(value = "/create-account", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createAccountJson(@RequestBody CreateCustomerAndAccountRequest payload) {
@@ -51,20 +50,11 @@ public class StaffController {
     }
 
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    @PutMapping("/update-account/{accountId}")
-    public ResponseEntity<String> updateAccount(@PathVariable Long accountId, @RequestBody AccountDTO accountDTO) {
-        accountService.updateAccount(accountId, accountDTO);
-        return ResponseEntity.ok("Account updated successfully");
-    }
-
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @PutMapping("/accounts/{accountId}/approve")
     public ResponseEntity<String> approveAccount(@PathVariable Long accountId) {
         accountService.approveAccount(accountId);
         return ResponseEntity.ok("Account approved");
     }
-
-    // Deprecated endpoints merged into /create-account
 
     @GetMapping("/customers/search")
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
@@ -75,8 +65,6 @@ public class StaffController {
         return ResponseEntity.ok(accountService.searchCustomers(q, limit));
     }
 
-
-    //this method is added to enable the python backend to fund a user by username
 
     @GetMapping("/users/users/details/{username}")
     @PreAuthorize("isAuthenticated()")
@@ -129,18 +117,6 @@ public class StaffController {
         return ResponseEntity.ok("Customer information updated successfully");
     }
 
-    @PutMapping("/customers/{customerId}/compliance-update")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
-    public ResponseEntity<String> updateCustomerWithCompliance(
-            @PathVariable Long customerId,
-            @RequestBody UpdateCustomerRequest request,
-            @RequestPart(value = "compliance", required = false) ComplianceDocumentRequest compliance,
-            org.springframework.security.core.Authentication authentication
-    ) {
-        String staffUsername = authentication.getName();
-        accountService.updateCustomerInformationWithCompliance(customerId, request, compliance, staffUsername);
-        return ResponseEntity.ok("Customer information updated with compliance tracking");
-    }
 
     @PostMapping("/customers/{customerId}/name-change")
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
@@ -165,4 +141,14 @@ public class StaffController {
         accountService.rejectAccount(accountId, staffUsername);
         return ResponseEntity.ok("Account rejected and removed");
     }
+
+    @GetMapping("/accounts/pending")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<List<AccountDTO>> getPendingAccounts() {
+        List<AccountDTO> accounts = accountRepository.findByStatus(AccountStatus.PENDING_APPROVAL)
+                .stream().map(accountMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(accounts);
+    }
+
 }
