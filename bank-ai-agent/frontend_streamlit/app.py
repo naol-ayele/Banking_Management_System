@@ -3,20 +3,23 @@ import requests
 import streamlit as st
 import google.generativeai as genai
 import matplotlib.pyplot as plt
+import time
 
 # --- Configuration and Setup ---
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8080")
 
-# --- NEW: Gemini API Configuration ---
-# Load API key from Streamlit secrets
+# API Key for backend requests
+API_KEY = os.getenv("BMS_API_KEY", "BMS-TEST-APIKEY-12345")
+HEADERS = {"X-API-KEY": API_KEY, "Content-Type": "application/json"}
+
+# --- Gemini API Configuration ---
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     GEMINI_AVAILABLE = True
 except (FileNotFoundError, KeyError):
     GEMINI_AVAILABLE = False
 
-# --- NEW: Persona for the AI Agent ---
-# This instruction guides the Gemini model's behavior for general queries.
+# --- Persona for the AI Agent ---
 AGENT_PERSONA = """
 You are a helpful and friendly AI Banking Agent. Your primary goal is to assist users with their general banking questions. 
 You must be professional, clear, and prioritize user safety in your communication.
@@ -37,14 +40,82 @@ if GEMINI_AVAILABLE:
 st.set_page_config(page_title="AI Banking Agent", page_icon="💳", layout="wide")
 st.title("💬 AI Banking Agent")
 
+if "clear_form" in st.session_state and st.session_state.clear_form:
+    for key in ["reg_username", "reg_email", "reg_phone", "reg_mother", "reg_id_url", "reg_password"]:
+        st.session_state.pop(key, None)
+    st.session_state.clear_form = False
+    st.experimental_rerun()
 
-# --- HELPER FUNCTION: To decide if a query is general or account-specific ---
+# --- 0. Registration Section ---
+# MODIFICATION 2: The registration form is now in an expander, making it visible on-demand.
+
+with st.expander("🚀 New User Registration"):
+    # ⏳ Check if we should hide the form after success
+    if "success_time" in st.session_state:
+        elapsed = time.time() - st.session_state.success_time
+        if elapsed < 2:  # show success for 2 seconds
+            st.success(st.session_state.success_message)
+            st.info("You will be redirected shortly...")
+        else:
+            # After 2s, remove the success flag → form disappears
+            st.session_state.pop("success_time")
+            st.session_state.pop("success_message")
+        # ✅ Do not render the form if success exists
+    else:
+        with st.form("registration_form"):
+            st.write("Please fill out the form below to create a new account.")
+            reg_col1, reg_col2 = st.columns(2)
+            with reg_col1:
+                username = st.text_input("Username", key="reg_username", value="")
+                email = st.text_input("Email", key="reg_email", value="")
+                phone = st.text_input("Phone Number", key="reg_phone", value="")
+            with reg_col2:
+                mother_name = st.text_input("Mother's Maiden Name", key="reg_mother", value="")
+                national_id_url = st.text_input("URL to National ID Image", key="reg_id_url", value="")
+                password = st.text_input("Password", type="password", key="reg_password", value="")
+
+            submitted = st.form_submit_button("Register", type="primary")
+
+            if submitted:
+                if not all([username, email, password, mother_name, national_id_url]):
+                    st.error("Please fill out all required fields.")
+                else:
+                    with st.spinner("Creating your account..."):
+                        payload = {
+                            "username": username,
+                            "email": email,
+                            "phone": phone,
+                            "motherName": mother_name,
+                            "nationalIdImageUrl": national_id_url,
+                            "password": password,
+                            "role": "CUSTOMER"
+                        }
+                        try:
+                            res = requests.post(f"{BACKEND_URL}/api/auth/register", json=payload, headers=HEADERS)
+                            res.raise_for_status()
+                            response_data = res.json()
+
+                            # ✅ Save success message + timestamp in session_state
+                            st.session_state.success_message = (
+                                f"✅ Registration successful! Welcome, {response_data.get('username')}! "
+                                f"Your new User ID is {response_data.get('userId')}."
+                            )
+                            st.session_state.success_time = time.time()
+                            st.experimental_rerun()
+
+                        except requests.exceptions.HTTPError as e:
+                            try:
+                                error_details = e.response.json()
+                                msg = error_details.get("details") or error_details.get("message") or e.response.text
+                                st.error(f"❌ Registration failed: {msg}")
+                            except ValueError:
+                                st.error(f"❌ Registration failed with status code {e.response.status_code}")
+                        except Exception as e:
+                            st.error(f"An unexpected error occurred: {e}")
+
+# --- HELPER FUNCTION ---
 def is_account_specific(query: str) -> bool:
-    """
-    Simple keyword-based router to check if the query requires backend access.
-    """
     query = query.lower()
-    # Keywords that indicate a need for personal data from the backend
     action_keywords = [
         "my account", "my balance", "financial summary", "spending", 
         "transactions", "loan eligibility", "my savings", "income",
@@ -52,8 +123,7 @@ def is_account_specific(query: str) -> bool:
     ]
     return any(keyword in query for keyword in action_keywords)
 
-
-# --- 1. Modern Chat Interface ---
+# --- 1. Chat Section ---
 with st.container(border=True):
     st.subheader("Chat with your AI Assistant")
 
@@ -70,19 +140,16 @@ with st.container(border=True):
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            reply = "" # Initialize reply variable
-            # --- MODIFIED: Main chat logic with routing ---
+            reply = "" 
             if is_account_specific(prompt):
-                # If it's an account action, call the backend
                 reply_placeholder = st.empty()
                 reply_placeholder.markdown("Connecting to the secure backend to access your account...")
                 try:
-                    res = requests.post(f"{BACKEND_URL}/chat", json={"message": prompt})
+                    res = requests.post(f"{BACKEND_URL}/chat", json={"message": prompt}, headers=HEADERS)
                     res.raise_for_status()
                     reply = res.json().get("response", "Sorry, I couldn't get a response from the backend.")
                     reply_placeholder.markdown(reply)
                 except Exception as e:
-                    # Provide a much clearer error message to the user
                     reply = (
                         "**Could not connect to the banking service.** "
                         "This action requires a secure connection to the backend, which appears to be offline. "
@@ -90,39 +157,28 @@ with st.container(border=True):
                     )
                     st.error(reply)
             else:
-                # --- NEW: If it's a general question, call Gemini directly ---
                 if not GEMINI_AVAILABLE:
-                    reply = "Gemini API key is not configured. Please add it to your Streamlit secrets to enable general chat."
+                    reply = "Gemini API key is not configured. Please add it to your Streamlit secrets."
                     st.error(reply)
                 else:
                     with st.spinner("Thinking..."):
                         try:
-                            # Start a chat session with Gemini and send the prompt
                             chat = model.start_chat()
                             response_stream = chat.send_message(prompt, stream=True)
-                            
-                            # Stream the response to the UI for the "live typing" effect
-                            # and capture the final response object once it's done.
                             final_response_object = st.write_stream(response_stream)
-
-                            # ★★★ FIX IS HERE ★★★
-                            # After streaming, extract the plain text from the final response object.
                             try:
                                 reply = final_response_object.candidates[0].content.parts[0].text
-                            except (AttributeError, IndexError):
-                                # Provide a fallback if the response structure is unexpected
-                                reply = "There was an issue generating the response."
-                                
+                            except (AttributeError, IndexError, StopIteration):
+                                reply = "There was an issue processing the AI response. Please try again."
                         except Exception as e:
                             reply = f"An error occurred with the AI model: {e}"
                             st.error(reply)
-        
-        # This now appends the clean text for both backend and Gemini responses
-        st.session_state.messages.append({"role": "assistant", "content": reply})
+            if reply:
+                st.session_state.messages.append({"role": "assistant", "content": reply})
 
 st.divider()
 
-# --- 2. Analytics Section (No changes needed here) ---
+# --- 2. Analytics Section ---
 st.subheader("📊 Analytics Dashboard")
 
 user_id = st.number_input(
@@ -140,7 +196,11 @@ with tab1:
     if st.button("Analyze Financial Summary", type="primary"):
         with st.spinner("Fetching summary..."):
             try:
-                r = requests.get(f"{BACKEND_URL}/analytics/financial-summary", params={"user_id": user_id})
+                r = requests.get(
+                    f"{BACKEND_URL}/analytics/financial-summary",
+                    params={"user_id": user_id},
+                    headers=HEADERS
+                )
                 r.raise_for_status()
                 data = r.json()
                 st.write("#### Key Monthly Metrics")
@@ -170,7 +230,11 @@ with tab2:
                 params = {"user_id": user_id}
                 if desired > 0:
                     params["desired_amount"] = desired
-                r = requests.get(f"{BACKEND_URL}/analytics/loan-eligibility", params=params)
+                r = requests.get(
+                    f"{BACKEND_URL}/analytics/loan-eligibility",
+                    params=params,
+                    headers=HEADERS
+                )
                 r.raise_for_status()
                 data = r.json()
                 if data["eligible"]:

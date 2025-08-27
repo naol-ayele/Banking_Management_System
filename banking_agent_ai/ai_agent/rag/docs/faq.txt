@@ -1,0 +1,5 @@
+Q: How to reset online banking password?
+A: Use the 'Forgot Password' flow and complete identity verification.
+
+Q: What is overdraft?
+A: Overdraft occurs when transactions exceed available balance beyond permitted limits.

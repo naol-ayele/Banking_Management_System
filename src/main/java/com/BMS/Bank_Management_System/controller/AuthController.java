@@ -37,6 +37,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/login-agent")
+    public ResponseEntity<AuthResponse> loginForAgent(@RequestBody AuthRequest request) {
+        return ResponseEntity.ok(authService.loginForAgent(request));
+    }
+
     // Self change password (requires supplying current password)
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN', 'LOAN_OFFICER')")
     @PostMapping("/change-password")
