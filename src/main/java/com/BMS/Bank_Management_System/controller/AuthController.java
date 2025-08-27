@@ -1,4 +1,5 @@
 package com.BMS.Bank_Management_System.controller;
+
 import com.BMS.Bank_Management_System.dto.AuthRequest;
 import com.BMS.Bank_Management_System.dto.AuthResponse;
 import com.BMS.Bank_Management_System.dto.UserDTO;
@@ -36,6 +37,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/login-agent")
+    public ResponseEntity<AuthResponse> loginForAgent(@RequestBody AuthRequest request) {
+        return ResponseEntity.ok(authService.loginForAgent(request));
+    }
+
     // Self change password (requires supplying current password)
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
     @PostMapping("/change-password")
@@ -43,4 +49,5 @@ public class AuthController {
         authService.changePassword(authentication.getName(), req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok("Password updated");
     }
+
 }

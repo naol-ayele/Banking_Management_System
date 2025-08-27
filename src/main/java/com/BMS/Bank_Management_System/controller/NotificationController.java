@@ -1,4 +1,5 @@
 package com.BMS.Bank_Management_System.controller;
+
 import com.BMS.Bank_Management_System.entity.Notification;
 import com.BMS.Bank_Management_System.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,6 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
     @GetMapping
     public ResponseEntity<List<Notification>> myNotifications(Authentication auth) {
@@ -33,5 +30,7 @@ public class NotificationController {
         return ResponseEntity.ok("OK");
     }
 }
+
+
 
 

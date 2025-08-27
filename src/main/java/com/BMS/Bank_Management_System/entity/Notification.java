@@ -1,10 +1,10 @@
 package com.BMS.Bank_Management_System.entity;
 
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.ConnectionBuilder;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,6 +39,7 @@ public class Notification {
     private LocalDateTime createdAt;
     private LocalDateTime sentAt;
     private LocalDateTime readAt;
+
 }
 
 

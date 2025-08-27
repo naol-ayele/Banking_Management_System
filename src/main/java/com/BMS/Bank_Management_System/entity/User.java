@@ -32,6 +32,9 @@ public class User {
     @Column(unique = true)
     private String phone;
 
+    @Column
+    private Integer creditScore = 650; //used in the financial analysis for the ai part
+
     private String motherName;
 
     private String nationalIdImageUrl;
@@ -47,5 +50,4 @@ public class User {
     private Integer failedLoginAttempts;
     private Instant lockedUntil;
 }
-
 

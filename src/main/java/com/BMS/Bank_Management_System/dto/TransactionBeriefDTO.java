@@ -1,4 +1,4 @@
-package com.bms.Banking.Management.System.dto;
+package com.BMS.Bank_Management_System.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionBriefDTO {
+public class TransactionBeriefDTO {
     private Long id;
     private String type;
     private BigDecimal amount;
