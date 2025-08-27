@@ -31,7 +31,6 @@ public class CardlessWithdrawalController {
     }
 
 
-    // For ATM to get withdrawal details
     @GetMapping("/withdrawal/details/{token}")
     public ResponseEntity<CardlessWithdrawalRequest> getWithdrawalDetails(
             @PathVariable String token) {

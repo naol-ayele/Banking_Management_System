@@ -41,12 +41,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.getUsernameFromJwtToken(token);
             } catch (Exception e) {
-                // Invalid token - proceed without authentication
                 logger.warn("JWT token extraction failed: " + e.getMessage());
             }
         }
 
-        // If username extracted and no current authentication
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtUtil.validateJwtToken(token)) {

@@ -23,7 +23,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(userDTO));
     }
 
-    // Role-controlled registration: requires auth token and enforces creator permissions
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
     @PostMapping("/register/managed")
     public ResponseEntity<UserDTO> registerManaged(@RequestBody UserDTO userDTO, Authentication authentication) {
@@ -42,7 +41,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.loginForAgent(request));
     }
 
-    // Self change password (requires supplying current password)
+
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN', 'LOAN_OFFICER')")
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(Authentication authentication, @RequestBody ChangePasswordRequest req) {

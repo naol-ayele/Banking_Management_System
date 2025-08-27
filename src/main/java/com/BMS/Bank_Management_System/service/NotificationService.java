@@ -3,7 +3,6 @@ package com.BMS.Bank_Management_System.service;
 
 import com.BMS.Bank_Management_System.dto.NotificationDto;
 import com.BMS.Bank_Management_System.entity.Notification;
-import com.BMS.Bank_Management_System.entity.User;
 import com.BMS.Bank_Management_System.repository.NotificationRepository;
 import com.BMS.Bank_Management_System.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

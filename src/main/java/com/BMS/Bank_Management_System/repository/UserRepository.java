@@ -15,8 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPhone(String phone);
 
-    // ✅ removed risky JPQL OR query
-    // Search methods below are safe
 
     List<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneContainingIgnoreCase(
             String username, String email, String phone, org.springframework.data.domain.Pageable pageable);

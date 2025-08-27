@@ -7,9 +7,11 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
+
     @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "accountType", expression = "java(acc.getAccountType()!=null?acc.getAccountType().name():null)")
-    @Mapping(target = "status", expression = "java(acc.getStatus()!=null?acc.getStatus().name():null)")
+    @Mapping(target = "customerUsername", source = "user.username")
+    @Mapping(target = "customerEmail", source = "user.email")
+    @Mapping(target = "accountType", expression = "java(acc.getAccountType() != null ? acc.getAccountType().name() : null)")
+    @Mapping(target = "status", expression = "java(acc.getStatus() != null ? acc.getStatus().name() : null)")
     AccountDTO toDto(Account acc);
 }
-

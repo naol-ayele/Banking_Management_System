@@ -31,11 +31,7 @@ public class LoanPenaltyService {
         LocalDate today = LocalDate.now();
         log.info("Running daily loan penalty job for date {}", today);
 
-        // Option 1 (preferred): use custom query
         List<LoanRepayment> overdue = repaymentRepo.findOverdueForPenalty(today);
-        // Option 2: basic method if you prefer
-        // List<LoanRepayment> overdue = repaymentRepo.findByStatusInAndDueDateBefore(
-        //     List.of(RepaymentStatus.PENDING, RepaymentStatus.PARTIAL), today);
 
         BigDecimal perDay = loanProps.getPenaltyPercentPerDay(); // e.g. 0.05 means 5% per day
         if (perDay.compareTo(BigDecimal.ZERO) <= 0) {

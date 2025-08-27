@@ -136,8 +136,6 @@ public class CardlessWithdrawalService {
         }
     }
 
-    // ============ PRIVATE HELPER METHODS ============
-
     private void storeInRedis(String token, CardlessWithdrawalRequest request) {
         try {
             String requestJson = objectMapper.writeValueAsString(request);

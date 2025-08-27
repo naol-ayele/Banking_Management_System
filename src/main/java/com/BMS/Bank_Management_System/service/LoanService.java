@@ -199,7 +199,6 @@ public class LoanService {
         return loanRepository.findByUser_Username(username).stream().map(loanMapper::toDto).toList();
     }
 
-    // ---------- LOAN OFFICER ACTIONS ----------
 
     public List<LoanResponse> listPending() {
         return loanRepository.findByStatus(LoanStatus.PENDING).stream().map(loanMapper::toDto).toList();
@@ -259,7 +258,6 @@ public class LoanService {
         return loanRepository.findAll().stream().map(loanMapper::toDto).toList();
     }
 
-    // ---------- Helpers ----------
 
     private Loan loadLoan(Long id) {
         return loanRepository.findById(id)

@@ -63,9 +63,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getMyPerformedTransactions());
     }
 
-    // Admin transactions endpoint moved to AdminController at /api/admin/transactions
 
-    // New endpoint for single transaction receipt PDF
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','ADMIN')")
     @GetMapping("/receipt/{transactionId}")
     public ResponseEntity<InputStreamResource> getTransactionReceipt(@PathVariable Long transactionId) {

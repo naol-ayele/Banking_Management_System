@@ -45,11 +45,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedOrigins(List.of("http://localhost:5051"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:*","http://127.0.0.1:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -71,7 +71,6 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
 
-
                         // ATM and cardless processing endpoints - authenticated via API key
                         .requestMatchers("/api/atm/**").authenticated()
                         .requestMatchers("/api/cardless/withdrawal/process").authenticated()
@@ -89,9 +88,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/loans/**").hasRole("LOAN_OFFICER")
 
                         // All other endpoints require authentication
+                        .requestMatchers("/analytics/**").permitAll()
+
                         .anyRequest().authenticated())
                 .headers(AbstractHttpConfigurer::disable)
                 .with(new CorsConfigurer<>(), Customizer.withDefaults())
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .addFilterBefore(atmApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

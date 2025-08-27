@@ -35,7 +35,6 @@ public class AtmApiKeyFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String apiKey = request.getHeader("X-ATM-API-KEY");
 
-        // Check if it's an ATM API call
         if (path.startsWith("/api/atm/") ||
                 path.equals("/api/cardless/withdrawal/process") ||
                 path.startsWith("/api/cardless/withdrawal/validate/")) {
@@ -50,7 +49,6 @@ public class AtmApiKeyFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // ✅ CRITICAL: Create authentication for valid API keys
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     "ATM-SYSTEM",
                     null,

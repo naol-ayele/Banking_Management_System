@@ -19,8 +19,8 @@ public class LoanProperties {
     private String penaltyCron = "0 0 0 * * *";
 
     // New fields for eligibility brackets
-    private BigDecimal lowBracketMax = new BigDecimal("1000");     // e.g. inflow <= 1000
-    private BigDecimal mediumBracketMax = new BigDecimal("10000"); // e.g. inflow <= 10000
+    private BigDecimal lowBracketMax = new BigDecimal("1000");
+    private BigDecimal mediumBracketMax = new BigDecimal("10000");
     private BigDecimal lowMaxLoan = new BigDecimal("500");
     private BigDecimal mediumMaxLoan = new BigDecimal("5000");
     private BigDecimal highMaxLoan = new BigDecimal("50000");
