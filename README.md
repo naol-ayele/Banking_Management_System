@@ -1,4 +1,4 @@
-# 🤖 AI Sidebar Assistant for Banking Management System
+# 🤖 Banking Management System with AI Assistant
 
 ## 📌 Overview
 The AI Sidebar Assistant is integrated into the **Banking Management System** as a 
