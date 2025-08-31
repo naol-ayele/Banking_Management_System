@@ -9,8 +9,8 @@ services:
       - "8080:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bankdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATASOURCE_USERNAME: your username
+      SPRING_DATASOURCE_PASSWORD: your password
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
     depends_on:
@@ -26,7 +26,7 @@ services:
     environment:
       POSTGRES_DB: bankdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_PASSWORD: 
     ports:
       - "5432:5432"
     volumes:
@@ -46,8 +46,8 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: your default email
+      PGADMIN_DEFAULT_PASSWORD: your password
     ports:
       - "5051:80"  # access at localhost:5051
     depends_on:
